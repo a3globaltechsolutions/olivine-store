@@ -1,5 +1,6 @@
 const encoder = new TextEncoder();
-const key = new TextEncoder().encode(process.env.ENCRYPTION_KEY); // Retrieve key from env var
+// const key = new TextEncoder().encode(process.env.ENCRYPTION_KEY); // Retrieve key from env var
+const key = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
 
 // Hash function with key-based encryption
 export const hash = async (plainPassword: string): Promise<string> => {

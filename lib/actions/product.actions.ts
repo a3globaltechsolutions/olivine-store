@@ -6,6 +6,9 @@ import { revalidatePath } from 'next/cache';
 import { insertProductSchema, updateProductSchema } from '../validators';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
+import { UTApi } from 'uploadthing/server';
+
+const utapi = new UTApi();
 
 // Get latest products
 export async function getLatestProducts() {
@@ -97,10 +100,10 @@ export async function getAllProducts({
       sort === 'lowest'
         ? { price: 'asc' }
         : sort === 'highest'
-        ? { price: 'desc' }
-        : sort === 'rating'
-        ? { rating: 'desc' }
-        : { createdAt: 'desc' },
+          ? { price: 'desc' }
+          : sort === 'rating'
+            ? { rating: 'desc' }
+            : { createdAt: 'desc' },
     skip: (page - 1) * limit,
     take: limit,
   });
@@ -118,20 +121,41 @@ export async function deleteProduct(id: string) {
   try {
     const productExists = await prisma.product.findFirst({
       where: { id },
+      select: { images: true },
     });
 
     if (!productExists) throw new Error('Product not found');
 
+    // 🗑️ Delete product from DB first
     await prisma.product.delete({ where: { id } });
+
+    // 🔑 Extract file keys from UploadThing URLs
+    const fileKeys = productExists.images
+      .map((url) => url.split('/').pop())
+      .filter(Boolean) as string[];
+
+    // 🗑️ Delete from UploadThing (non-blocking)
+    if (fileKeys.length > 0) {
+      try {
+        await utapi.deleteFiles(fileKeys);
+      } catch (err) {
+        console.error('⚠️ Failed to delete images from UploadThing:', err);
+        return {
+          success: false,
+          message: '⚠️ Failed to delete images from UploadThing',
+        };
+      }
+    }
 
     revalidatePath('/admin/products');
 
     return {
       success: true,
-      message: 'Product deleted successfully',
+      message: 'Product deleted successfully (images cleaned up)',
     };
   } catch (error) {
-    return { success: false, message: formatError(error) };
+    console.error('❌ Error deleting product:', error);
+    return { success: false, message: 'Failed to delete product' };
   }
 }
 

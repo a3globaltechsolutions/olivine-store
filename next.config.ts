@@ -5,8 +5,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'utfs.io',
-        port: '',
+        hostname: 'utfs.io', // old host (still valid for some uploads)
+      },
+      {
+        protocol: 'https',
+        hostname: '**.ufs.sh', // new UploadThing host
       },
     ],
   },
