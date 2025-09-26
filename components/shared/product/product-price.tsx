@@ -15,7 +15,7 @@ const ProductPrice = ({
   return (
     <p className={cn('text-2xl', className)}>
       <span className='text-xs align-super'>₦</span>
-      {intValue}
+      {Number(intValue).toLocaleString('en-NG')}
       <span className='text-xs align-super'>.{floatValue}</span>
     </p>
   );
