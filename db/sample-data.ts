@@ -63,7 +63,7 @@ const sampleData = {
       numReviews: 3,
       stock: 0,
       isFeatured: false,
-      banner: null,
+      banner: '/images/banner-3.jpg',
     },
     {
       name: 'Calvin Klein Slim Fit Stretch Shirt',
