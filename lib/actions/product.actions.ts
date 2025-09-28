@@ -180,16 +180,45 @@ export async function createProduct(data: z.infer<typeof insertProductSchema>) {
 export async function updateProduct(data: z.infer<typeof updateProductSchema>) {
   try {
     const product = updateProductSchema.parse(data);
+
     const productExists = await prisma.product.findFirst({
       where: { id: product.id },
+      select: { images: true, banner: true },
     });
 
     if (!productExists) throw new Error('Product not found');
 
+    // ✅ Find deleted images
+    const oldImages = productExists.images || [];
+    const newImages = product.images || [];
+    const deletedImages = oldImages.filter((img) => !newImages.includes(img));
+
+    // ✅ Find deleted banner
+    const oldBanner = productExists.banner;
+    const newBanner = product.banner;
+    const deletedBanner =
+      oldBanner && (!newBanner || oldBanner !== newBanner) ? oldBanner : null;
+
+    // ✅ Update DB first
     await prisma.product.update({
       where: { id: product.id },
       data: product,
     });
+
+    // ✅ Delete orphaned files from UploadThing (non-blocking)
+    const toDelete = [...deletedImages, deletedBanner].filter(
+      Boolean
+    ) as string[];
+    if (toDelete.length > 0) {
+      try {
+        const fileKeys = toDelete
+          .map((url) => url.split('/').pop())
+          .filter(Boolean) as string[];
+        await utapi.deleteFiles(fileKeys);
+      } catch (err) {
+        console.error('⚠️ Failed to delete images from UploadThing:', err);
+      }
+    }
 
     revalidatePath('/admin/products');
 
