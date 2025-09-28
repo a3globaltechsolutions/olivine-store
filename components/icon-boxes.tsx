@@ -10,7 +10,7 @@ const IconBoxes = () => {
             <ShoppingBag />
             <div className='text-sm font-bold'>Free Shipping</div>
             <div className='text-sm text-muted-foreground'>
-              Free shipping on orders above $100
+              Free shipping on orders above ₦20,000
             </div>
           </div>
           <div className='space-y-2'>
@@ -24,7 +24,7 @@ const IconBoxes = () => {
             <WalletCards />
             <div className='text-sm font-bold'>Flexible Payment</div>
             <div className='text-sm text-muted-foreground'>
-              Pay with credit card, PayPal or COD
+              Pay with your card, PayPal or Cash On Delivery
             </div>
           </div>
           <div className='space-y-2'>
