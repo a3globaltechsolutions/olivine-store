@@ -366,7 +366,6 @@ const ProductForm = ({
             )}
           />
         </div>
-
         {/* Featured / Banner */}
         <div className='upload-field'>
           Featured Product
