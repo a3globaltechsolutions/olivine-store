@@ -2,6 +2,7 @@ import { prisma } from '@/db/prisma';
 import { APP_NAME, SERVER_URL } from '@/lib/constants';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import crypto from 'crypto';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -9,41 +10,57 @@ export async function POST(req: Request) {
   try {
     const { email } = await req.json();
 
-    if (!email || !email.includes('@')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    // Save to DB (ignore if already exists)
+    // Generate a token
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // Save subscriber (idempotent)
     await prisma.newsletterSubscriber.upsert({
       where: { email },
-      update: {},
-      create: { email },
+      update: { active: true }, // keep existing token
+      create: { email, unsubscribeToken: token },
     });
 
+    // Fetch subscriber (to get token)
+    const subscriber = await prisma.newsletterSubscriber.findUnique({
+      where: { email },
+    });
+
+    if (!subscriber) {
+      return NextResponse.json(
+        { error: 'Failed to save subscriber' },
+        { status: 500 }
+      );
+    }
+
     // Send confirmation email
-    await resend.emails.send({
+    const confirmResult = await resend.emails.send({
       from: process.env.SENDER_EMAIL!,
       to: email,
-      subject: 'Welcome to Olivine Fashion Boutique Newsletter',
+      subject: `Welcome to ${APP_NAME} Newsletter 🎉`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-            <h1 style="color: #FF6600; font-size: 24px; margin: 0;">${APP_NAME}</h1>
-            <img 
-              src="${SERVER_URL}/images/logo.svg" 
-              alt="Olivine Fashion Boutique Logo" 
-              style="max-width: 150px; height: auto;" 
-            />
-          </div>
+          <h1 style="color: #FF6600;">${APP_NAME}</h1>
           <h2>Welcome to our Newsletter 🎉</h2>
-          <p>Thanks for subscribing to <b>Olivine Fashion Boutique</b>.</p>
-          <p>You’ll be the first to know about new arrivals, special offers, and exclusive discounts!</p>
+          <p>Thanks for subscribing! You’ll be the first to know about new arrivals and offers.</p>
           <p style="margin-top: 30px; font-size: 12px; color: #888;">
-            If you did not subscribe, you can ignore this email.
+            If you no longer wish to receive these emails, you can 
+            <a href="${SERVER_URL}/newsletter?token=${subscriber.unsubscribeToken}" 
+              style="color:#FF6600; text-decoration:underline;">
+              unsubscribe here
+            </a>.
           </p>
         </div>
       `,
     });
+
+    if (confirmResult.error) {
+      throw new Error(confirmResult.error.message);
+    }
 
     // Notify admin
     await resend.emails.send({
@@ -65,23 +82,30 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const email = searchParams.get('email');
+  const token = searchParams.get('token');
 
-  if (!email) {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+  if (!token) {
+    return NextResponse.json({ error: 'Token is required' }, { status: 400 });
   }
 
   try {
     await prisma.newsletterSubscriber.update({
-      where: { email },
+      where: { unsubscribeToken: token },
       data: { active: false },
     });
 
-    return NextResponse.json({
-      message: 'You have unsubscribed successfully.',
-    });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    return NextResponse.json({ error: 'Email not found' }, { status: 404 });
+    return new Response(
+      `<div style="font-family: Arial, sans-serif; text-align:center; padding:40px;">
+         <h1 style="color:#FF6600;">${APP_NAME}</h1>
+         <h2>You have unsubscribed successfully ✅</h2>
+         <p>We’re sorry to see you go. You can re-subscribe anytime on our website.</p>
+       </div>`,
+      { status: 200, headers: { 'Content-Type': 'text/html' } }
+    );
+  } catch {
+    return new Response(
+      `<h1>Unsubscribe failed</h1><p>The token is invalid or already used.</p>`,
+      { status: 404, headers: { 'Content-Type': 'text/html' } }
+    );
   }
 }
