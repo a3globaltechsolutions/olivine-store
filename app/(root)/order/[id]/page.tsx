@@ -5,6 +5,7 @@ import OrderDetailsTable from './order-details-table';
 import { ShippingAddress } from '@/types';
 import { auth } from '@/auth';
 import Stripe from 'stripe';
+import { convertNGNtoUSD } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Order Details',
@@ -42,6 +43,13 @@ const OrderDetailsPage = async (props: {
     client_secret = paymentIntent.client_secret;
   }
 
+  let totalUSD = 0;
+  try {
+    totalUSD = await convertNGNtoUSD(Number(order.totalPrice));
+  } catch (err) {
+    console.error('Currency conversion failed:', err);
+  }
+
   return (
     <OrderDetailsTable
       order={{
@@ -51,6 +59,7 @@ const OrderDetailsPage = async (props: {
       stripeClientSecret={client_secret}
       paypalClientId={process.env.PAYPAL_CLIENT_ID || 'sb'}
       isAdmin={session?.user?.role === 'admin' || false}
+      totalUSD={totalUSD}
     />
   );
 };

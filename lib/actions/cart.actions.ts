@@ -10,20 +10,14 @@ import { revalidatePath } from 'next/cache';
 import { Prisma } from '@prisma/client';
 
 // Calculate cart prices
-const VAT_RATE = 0.075; // 7.5% Nigeria VAT
-const SHIPPING_FLAT = 2000; // ₦2000 flat shipping
-const FREE_SHIP_MIN = 50000; // Free shipping if subtotal > ₦50,000
-
-export const calcPrice = (items: CartItem[]) => {
+// Nigeria cart price calculation
+const calcPrice = (items: CartItem[]) => {
   const itemsPrice = round2(
-    items.reduce((acc, item) => acc + Number(item.price) * item.qty, 0)
-  );
-
-  const shippingPrice = round2(itemsPrice > FREE_SHIP_MIN ? 0 : SHIPPING_FLAT);
-
-  const taxPrice = round2(VAT_RATE * itemsPrice);
-
-  const totalPrice = round2(itemsPrice + taxPrice + shippingPrice);
+      items.reduce((acc, item) => acc + Number(item.price) * item.qty, 0)
+    ),
+    shippingPrice = round2(itemsPrice > 50000 ? 0 : 2000), // ₦2000 flat, free after ₦50k
+    taxPrice = round2(0.075 * itemsPrice), // 7.5% VAT
+    totalPrice = round2(itemsPrice + taxPrice + shippingPrice);
 
   return {
     itemsPrice: itemsPrice.toFixed(2),

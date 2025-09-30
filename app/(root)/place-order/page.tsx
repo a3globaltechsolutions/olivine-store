@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import Image from 'next/image';
-import { formatCurrency } from '@/lib/utils';
+import { convertNGNtoUSD, formatCurrency } from '@/lib/utils';
 import PlaceOrderForm from './place-order-form';
 
 export const metadata: Metadata = {
@@ -38,6 +38,14 @@ const PlaceOrderPage = async () => {
   if (!user.paymentMethod) redirect('/payment-method');
 
   const userAddress = user.address as ShippingAddress;
+
+  // ✅ Convert NGN to USD before rendering
+  let totalUSD = 0;
+  try {
+    totalUSD = await convertNGNtoUSD(Number(cart.totalPrice));
+  } catch (err) {
+    console.error('Currency conversion failed:', err);
+  }
 
   return (
     <>
@@ -133,7 +141,14 @@ const PlaceOrderPage = async () => {
                 <div>Total</div>
                 <div>{formatCurrency(cart.totalPrice)}</div>
               </div>
-              <PlaceOrderForm />
+
+              {/* ✅ Show USD equivalent */}
+              <div className='flex justify-between text-sm text-gray-500'>
+                <div>Total (USD)</div>
+                <div>${totalUSD.toFixed(2)}</div>
+              </div>
+
+              <PlaceOrderForm usdTotal={totalUSD.toFixed(2)} />
             </CardContent>
           </Card>
         </div>

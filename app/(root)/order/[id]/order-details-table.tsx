@@ -34,11 +34,13 @@ const OrderDetailsTable = ({
   paypalClientId,
   isAdmin,
   stripeClientSecret,
+  totalUSD,
 }: {
   order: Omit<Order, 'paymentResult'>;
   paypalClientId: string;
   isAdmin: boolean;
   stripeClientSecret: string | null;
+  totalUSD: number;
 }) => {
   const {
     id,
@@ -233,6 +235,10 @@ const OrderDetailsTable = ({
               <div className='flex justify-between'>
                 <div>Total</div>
                 <div>{formatCurrency(totalPrice)}</div>
+              </div>
+              <div className='flex justify-between text-sm text-gray-500'>
+                <div>Total (USD)</div>
+                <div>${totalUSD.toFixed(2)}</div>
               </div>
 
               {/* PayPal Payment */}

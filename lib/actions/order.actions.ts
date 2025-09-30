@@ -2,7 +2,7 @@
 
 // import { isRedirectError } from 'next/dist/client/components/redirect'; i changed this to below
 import { isRedirectError } from './redirect-utils';
-import { convertToPlainObject, formatError } from '../utils';
+import { convertNGNtoUSD, convertToPlainObject, formatError } from '../utils';
 import { auth } from '@/auth';
 import { getMyCart } from './cart.actions';
 import { getUserById } from './user.actions';
@@ -16,7 +16,7 @@ import { Prisma } from '@prisma/client';
 import { sendPurchaseReceipt } from '@/email';
 
 // Create order and create the order items
-export async function createOrder() {
+export async function createOrder(usdTotal?: string) {
   try {
     const session = await auth();
     if (!session) throw new Error('User is not authenticated');
@@ -60,6 +60,7 @@ export async function createOrder() {
       shippingPrice: cart.shippingPrice,
       taxPrice: cart.taxPrice,
       totalPrice: cart.totalPrice,
+      usdTotal: usdTotal ? Number(usdTotal) : undefined, // 👈 add USD value if provided
     });
 
     // Create a transaction to create order and order items in database
@@ -124,14 +125,15 @@ export async function createPayPalOrder(orderId: string) {
   try {
     // Get order from database
     const order = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-      },
+      where: { id: orderId },
     });
 
     if (order) {
-      // Create paypal order
-      const paypalOrder = await paypal.createOrder(Number(order.totalPrice));
+      // Convert NGN → USD
+      const usdPrice = await convertNGNtoUSD(Number(order.totalPrice));
+
+      // Create paypal order in USD
+      const paypalOrder = await paypal.createOrder(usdPrice);
 
       // Update order with paypal order id
       await prisma.order.update({

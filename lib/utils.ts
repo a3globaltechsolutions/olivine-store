@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import qs from 'query-string';
+import { EXCHANGE_API } from './constants';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -145,4 +146,33 @@ export function formUrlQuery({
       skipNull: true,
     }
   );
+}
+
+// Converting NGN to USD
+export async function convertNGNtoUSD(amountNaira: number): Promise<number> {
+  const apiKey = EXCHANGE_API;
+  const url = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
+
+  const res = await fetch(url);
+  const text = await res.text();
+
+  if (!res.ok) {
+    console.error('Currency API error:', text);
+    throw new Error('Failed to fetch exchange rate');
+  }
+
+  const data = JSON.parse(text);
+
+  if (data.result !== 'success') {
+    console.error('Currency API response error:', data);
+    throw new Error(data['error-type'] || 'Unknown currency API error');
+  }
+
+  const rateNGN = data.conversion_rates.NGN; // NGN per 1 USD
+  if (!rateNGN) throw new Error('NGN rate not found');
+
+  // Convert NGN → USD
+  const amountUSD = amountNaira / rateNGN;
+
+  return Number(amountUSD.toFixed(2));
 }
