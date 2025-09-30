@@ -51,7 +51,7 @@ export async function createOrder(usdTotal?: string) {
       };
     }
 
-    // Create order object
+    // ✅ Always set usdTotal (default to 0 if none provided)
     const order = insertOrderSchema.parse({
       userId: user.id,
       shippingAddress: user.address,
@@ -60,13 +60,14 @@ export async function createOrder(usdTotal?: string) {
       shippingPrice: cart.shippingPrice,
       taxPrice: cart.taxPrice,
       totalPrice: cart.totalPrice,
-      usdTotal: usdTotal ? Number(usdTotal) : undefined, // 👈 add USD value if provided
+      usdTotal: usdTotal ? Number(usdTotal) : 0,
     });
 
     // Create a transaction to create order and order items in database
     const insertedOrderId = await prisma.$transaction(async (tx) => {
       // Create order
       const insertedOrder = await tx.order.create({ data: order });
+
       // Create order items from the cart items
       for (const item of cart.items as CartItem[]) {
         await tx.orderItem.create({
@@ -77,6 +78,7 @@ export async function createOrder(usdTotal?: string) {
           },
         });
       }
+
       // Clear cart
       await tx.cart.update({
         where: { id: cart.id },
