@@ -83,7 +83,7 @@ const Footer = () => {
       {/* Render newsletter here */}
       <NewsletterForm />
 
-      <footer>
+      <footer className='container mx-auto'>
         <div className='flex flex-col md:flex-row items-start justify-center px-6 py-14 md:px-16 lg:px-32 gap-10 border-b border-gray-500/30 text-gray-500'>
           <div className='w-4/5'>
             <div className='flex items-center gap-2 text-2xl font-bold text-gray-800 mb-6'>

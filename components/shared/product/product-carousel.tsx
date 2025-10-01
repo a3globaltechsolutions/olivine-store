@@ -64,7 +64,7 @@ const ProductCarousel = ({ data }: { data: Product[] }) => {
                 <div
                   className='
                     relative w-full 
-                    h-[220px] sm:h-[280px] md:h-[350px] lg:h-[450px] 
+                    h-[450px] 
                     mx-auto
                   '
                 >

@@ -18,7 +18,7 @@ const UserButton = async () => {
     return (
       <Button asChild>
         <Link href='/sign-in'>
-          <UserIcon /> Sign In
+          <UserIcon className='mr-1' /> Sign In
         </Link>
       </Button>
     );
@@ -30,51 +30,43 @@ const UserButton = async () => {
     <div className='flex gap-2 items-center'>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div className='flex items-center'>
-            <Button
-              variant='ghost'
-              className='relativee w-8 h-8 rounded-full ml-2 flex items-center justify-center bg-gray-200'
-            >
-              {firstInitial}
-            </Button>
-          </div>
+          <Button
+            variant='ghost'
+            className='w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-gray-200 text-sm sm:text-base'
+          >
+            {firstInitial}
+          </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-56' align='end' forceMount>
+
+        {/* Responsive width using Tailwind */}
+        <DropdownMenuContent className='w-44 sm:w-56' align='end' forceMount>
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col space-y-1'>
-              <div className='text-sm font-medium leading-none'>
-                {session.user?.name}
-              </div>
-              <div className='text-sm text-muted-foreground leading-none'>
+              <span className='text-sm font-medium'>{session.user?.name}</span>
+              <span className='text-xs text-muted-foreground'>
                 {session.user?.email}
-              </div>
+              </span>
             </div>
           </DropdownMenuLabel>
 
-          <DropdownMenuItem>
-            <Link href='/user/profile' className='w-full'>
-              User Profile
-            </Link>
+          <DropdownMenuItem asChild>
+            <Link href='/user/profile'>User Profile</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link href='/user/orders' className='w-full'>
-              Order History
-            </Link>
+          <DropdownMenuItem asChild>
+            <Link href='/user/orders'>Order History</Link>
           </DropdownMenuItem>
 
           {session?.user?.role === 'admin' && (
-            <DropdownMenuItem>
-              <Link href='/admin/overview' className='w-full'>
-                Admin
-              </Link>
+            <DropdownMenuItem asChild>
+              <Link href='/admin/overview'>Admin</Link>
             </DropdownMenuItem>
           )}
 
-          <DropdownMenuItem className='p-0 mb-1'>
+          <DropdownMenuItem className='p-0'>
             <form action={signOutUser} className='w-full'>
               <Button
-                className='w-full py-4 px-2 h-4 justify-start'
                 variant='ghost'
+                className='w-full justify-start text-left px-2 py-2 sm:py-3'
               >
                 Sign Out
               </Button>

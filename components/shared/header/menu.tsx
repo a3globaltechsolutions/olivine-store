@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import ModeToggle from './mode-toggle';
 import Link from 'next/link';
-import { EllipsisVertical, ShoppingCart } from 'lucide-react';
+import { ShoppingCart, User } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -14,6 +14,7 @@ import UserButton from './user-button';
 const Menu = () => {
   return (
     <div className='flex justify-end gap-3'>
+      {/* Desktop */}
       <nav className='hidden md:flex w-full max-w-xs gap-1'>
         <ModeToggle />
         <Button asChild variant='ghost'>
@@ -23,10 +24,13 @@ const Menu = () => {
         </Button>
         <UserButton />
       </nav>
+
+      {/* Mobile */}
       <nav className='md:hidden'>
         <Sheet>
-          <SheetTrigger className='align-middle'>
-            <EllipsisVertical />
+          <SheetTrigger className='flex items-center gap-1'>
+            <User size={20} />
+            <span className='text-sm'>Account</span>
           </SheetTrigger>
           <SheetContent className='flex flex-col items-start'>
             <SheetTitle>Menu</SheetTitle>

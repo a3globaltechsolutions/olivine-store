@@ -18,9 +18,10 @@ export default function AdminLayout({
             <Link href='/' className='w-22'>
               <Image
                 src='/images/logo.svg'
-                height={48}
-                width={48}
+                height={40}
+                width={40}
                 alt={APP_NAME}
+                className='hidden md:block'
               />
             </Link>
             <MainNav className='mx-6' />

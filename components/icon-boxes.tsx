@@ -10,7 +10,7 @@ const IconBoxes = () => {
             <ShoppingBag />
             <div className='text-sm font-bold'>Free Shipping</div>
             <div className='text-sm text-muted-foreground'>
-              Free shipping on orders above ₦20,000
+              Free shipping on orders above ₦50,000
             </div>
           </div>
           <div className='space-y-2'>

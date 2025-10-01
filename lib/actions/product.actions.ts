@@ -251,3 +251,22 @@ export async function getFeaturedProducts() {
 
   return convertToPlainObject(data);
 }
+
+// Get related products
+export async function getRelatedProducts(
+  category: string,
+  excludeSlug: string,
+  limit = 5
+) {
+  return await prisma.product.findMany({
+    where: {
+      category,
+      slug: { not: excludeSlug },
+      stock: { gt: 0 },
+    },
+    take: limit,
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+}
