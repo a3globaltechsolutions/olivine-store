@@ -21,7 +21,7 @@ const ProductCard = ({ product }: { product: Product }) => {
 
       {/* Product Name */}
       <Link href={`/product/${product.slug}`}>
-        <p className='md:text-base font-medium pt-2 w-full'>
+        <p className='md:text-base text-xl font-medium pt-2 w-full'>
           {product.name.split(' ').slice(0, 2).join(' ')}
           {product.name.split(' ').length > 2 && '...'}
         </p>
@@ -44,14 +44,24 @@ const ProductCard = ({ product }: { product: Product }) => {
       {/* Price and Buy Button */}
       <div className='flex items-end justify-between w-full mt-1'>
         <p className='text-base font-medium'>
-          ${Number(product.price).toFixed(2)}
+          ₦
+          {Number(product.price).toLocaleString('en-NG', {
+            minimumFractionDigits: 2,
+          })}
         </p>
-        {product.stock > 0 && (
+        {product.stock > 0 ? (
           <Link href={`/product/${product.slug}`}>
             <button className='px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition'>
               Buy now
             </button>
           </Link>
+        ) : (
+          <button
+            disabled
+            className='px-4 py-1.5 text-red-600 border border-red-600/20 rounded-full text-xs bg-red-50 cursor-not-allowed'
+          >
+            Out of Stock
+          </button>
         )}
       </div>
     </div>
