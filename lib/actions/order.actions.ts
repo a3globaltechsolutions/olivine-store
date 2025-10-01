@@ -249,6 +249,7 @@ export async function updateOrderToPaid({
       data: {
         isPaid: true,
         paidAt: new Date(),
+        usdTotal: Number(paymentResult?.pricePaid) || order.usdTotal,
         paymentResult,
       },
     });
