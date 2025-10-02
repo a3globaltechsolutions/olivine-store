@@ -21,16 +21,16 @@ const ProductCard = ({ product }: { product: Product }) => {
 
       {/* Product Name */}
       <Link href={`/product/${product.slug}`}>
-        <p className='md:text-base text-xl font-medium pt-2 w-full'>
-          {product.name.split(' ').slice(0, 2).join(' ')}
-          {product.name.split(' ').length > 2 && '...'}
+        <p className='md:text-base font-medium pt-2 w-full'>
+          {product.name.split(' ').slice(0, 3).join(' ')}
+          {product.name.split(' ').length > 3 && '...'}
         </p>
       </Link>
 
       {/* Product Description - Hidden on mobile */}
       <p className='w-full text-xs text-gray-500/70 max-sm:hidden'>
-        {product.description.split(' ').slice(0, 3).join(' ')}
-        {product.description.split(' ').length > 3 && '...'}
+        {product.description.split(' ').slice(0, 4).join(' ')}
+        {product.description.split(' ').length > 4 && '...'}
       </p>
 
       {/* Rating Section */}
@@ -50,7 +50,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           })}
         </p>
         {product.stock > 0 ? (
-          <Link href={`/product/${product.slug}`}>
+          <Link href={`/product/${product.slug}`} className='max-sm:hidden'>
             <button className='px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition'>
               Buy now
             </button>
@@ -58,7 +58,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         ) : (
           <button
             disabled
-            className='px-4 py-1.5 text-red-600 border border-red-600/20 rounded-full text-xs bg-red-50 cursor-not-allowed'
+            className='px-4 py-1.5 text-red-600 border border-red-600/20 rounded-full text-xs bg-red-50 cursor-not-allowed max-sm:hidden'
           >
             Out of Stock
           </button>

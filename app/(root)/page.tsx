@@ -17,7 +17,7 @@ const Homepage = async () => {
       {featuredProducts.length > 0 && (
         <ProductCarousel data={featuredProducts} />
       )}
-      <ProductList data={latestProducts} title='Popular products' limit={5} />
+      <ProductList data={latestProducts} title='Popular products' limit={10} />
       <ViewAllProductsButton />
       <DealCountdown />
       <IconBoxes />

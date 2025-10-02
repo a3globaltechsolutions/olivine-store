@@ -3,7 +3,7 @@ export const APP_DESCRIPTION = process.env.NEXT_PUBLIC_APP_DESCRIPTION!;
 export const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL!;
 export const EXCHANGE_API = process.env.EXCHANGE_API_KEY!;
 export const LATEST_PRODUCTS_LIMIT =
-  Number(process.env.LATEST_PRODUCTS_LIMIT) || 5;
+  Number(process.env.LATEST_PRODUCTS_LIMIT) || 10;
 
 export const signInDefaultValues = {
   email: '',
@@ -27,9 +27,16 @@ export const shippingAddressDefaultValues = {
 
 export const PAYMENT_METHODS = process.env.PAYMENT_METHODS
   ? process.env.PAYMENT_METHODS.split(', ')
-  : ['PayPal', 'Stripe', 'CashOnDelivery'];
+  : [
+      'PayStack',
+      'Flutterwave',
+      'PayPal',
+      'CashOnDelivery',
+      // 'Stripe',
+    ];
+
 export const DEFAULT_PAYMENT_METHOD =
-  process.env.DEFAULT_PAYMENT_METHOD || 'PayPal';
+  process.env.DEFAULT_PAYMENT_METHOD || 'PayStack';
 
 export const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 12;
 
