@@ -162,11 +162,17 @@ const OrderDetailsTable = ({
           <Card className='my-2'>
             <CardContent className='p-4 gap-4'>
               <h2 className='text-xl pb-4'>Shipping Address</h2>
-              <p>{shippingAddress.fullName}</p>
-              <p className='mb-2'>
-                {shippingAddress.streetAddress}, {shippingAddress.city}
-                {shippingAddress.postalCode}, {shippingAddress.country}
-              </p>
+              {shippingAddress ? (
+                <>
+                  <p>{shippingAddress.fullName}</p>
+                  <p className='mb-2'>
+                    {shippingAddress.streetAddress}, {shippingAddress.city}{' '}
+                    {shippingAddress.postalCode}, {shippingAddress.country}
+                  </p>
+                </>
+              ) : (
+                <p className='text-red-500'>No shipping address available</p>
+              )}
               {isDelivered ? (
                 <Badge variant='secondary'>
                   Delivered at {formatDateTime(deliveredAt!).dateTime}
@@ -274,7 +280,7 @@ const OrderDetailsTable = ({
                     );
                     const data = await res.json();
                     if (data.success) {
-                      window.location.href = data.authorizationUrl; // redirect to Paystack hosted checkout
+                      window.location.href = data.authorizationUrl;
                     } else {
                       toast({
                         variant: 'destructive',
