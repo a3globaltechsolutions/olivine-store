@@ -51,10 +51,6 @@ function NewsletterForm() {
       <h1 className='md:text-4xl text-2xl font-medium'>
         Subscribe now &amp; get 20% off
       </h1>
-      <p className='md:text-base text-gray-500/80 pb-8 px-4'>
-        Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry.
-      </p>
       <div className='flex flex-col md:flex-row items-stretch max-w-2xl w-full md:h-14 h-auto px-4'>
         <input
           className='border border-gray-500/30 rounded-md md:rounded-r-none h-12 md:h-full outline-none w-full px-3 text-gray-500'
@@ -80,30 +76,55 @@ const Footer = () => {
 
   return (
     <>
-      {/* Render newsletter here */}
+      {/* Newsletter Section */}
       <NewsletterForm />
 
       <footer className='container mx-auto'>
         <div className='flex flex-col md:flex-row items-start justify-center px-6 py-14 md:px-16 lg:px-32 gap-10 border-b border-gray-500/30 text-gray-500'>
+          {/* About */}
           <div className='w-4/5'>
             <div className='flex items-center gap-2 text-2xl font-bold text-gray-800 mb-6'>
               <Link href='/' className='text-orange-600'>
                 {APP_NAME}
               </Link>
             </div>
-            <p className='mt-6 text-sm'>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry. Lorem Ipsum has been the industry&apos;s standard dummy
-              text ever since the 1500s, when an unknown printer took a galley
-              of type and scrambled it to make a type specimen book.
+            <p className='mt-6 text-sm leading-relaxed'>
+              We are your go-to online boutique, where you see and meet
+              timeless, classic, trendy, innovative, creative, and elegant
+              styles of fashion.
+              <br />
+              <br />
+              We specialize in offering classic, neutral unisex clothing and
+              accessories alongside the latest trends.
+              <br />
+              <br />
+              Fashion has always been our passion. We started Olivine&apos;s
+              Fashion Boutique with the zeal of meeting people’s expectations,
+              making them feel confident, unique, beautiful, cute, and
+              comfortable in their own skin. Our collections are handpicked for
+              effortless style, helping you dress up or down while discovering
+              your favorite outfits.
+              <br />
+              <br />
+              Our journey began in Baltimore, MD, later expanding to Africa
+              (Nigeria to be precise), and now we are worldwide.{' '}
+              <span className='italic'>“Glory be to God”</span>.
+              <br />
+              <br />
+              We are grateful to have you as our customer. Thanks for choosing
+              Olivine&apos;s Fashion Boutique for your wardrobe essentials and
+              for supporting our unique business. We look forward to helping you
+              discover more about your unique style.
             </p>
           </div>
+
+          {/* Links */}
           <div className='w-1/2 flex items-center justify-start md:justify-center'>
             <div>
               <h2 className='font-medium text-gray-900 mb-5'>Company</h2>
               <ul className='text-sm space-y-2'>
                 <li>
-                  <Link className='hover:underline transition' href='#'>
+                  <Link className='hover:underline transition' href='/'>
                     Home
                   </Link>
                 </li>
@@ -125,31 +146,40 @@ const Footer = () => {
               </ul>
             </div>
           </div>
+
+          {/* Contact */}
           <div className='w-1/2 flex items-start justify-start md:justify-center'>
             <div>
               <h2 className='font-medium text-gray-900 mb-5'>Get in touch</h2>
               <div className='text-sm space-y-2'>
                 <Link
-                  href='https://wa.me/1234567890'
+                  href='https://wa.me/2348146581941'
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='hover:text-orange-600 transition'
+                  className='hover:text-orange-600 transition block'
                 >
-                  +1-234-567-890
+                  +2348146581941
                 </Link>
-                <br />
                 <Link
-                  href='mailto:contact@greatstack.dev'
-                  className='hover:text-orange-600 transition'
+                  href='https://wa.me/2347081512250'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='hover:text-orange-600 transition block'
                 >
-                  demo@gmail.com
+                  +2347081512250
+                </Link>
+                <Link
+                  href='mailto:Kingsleyokolie49@gmail.com'
+                  className='hover:text-orange-600 transition block'
+                >
+                  Kingsleyokolie49@gmail.com
                 </Link>
               </div>
             </div>
           </div>
         </div>
         <p className='py-4 text-center text-xs md:text-sm'>
-          Copyright {currentYear} © {APP_NAME} All Right Reserved.
+          Copyright {currentYear} © {APP_NAME} All Rights Reserved.
         </p>
       </footer>
     </>
