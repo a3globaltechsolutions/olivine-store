@@ -12,7 +12,7 @@ import { prisma } from '@/db/prisma';
 import { CartItem, PaymentResult, ShippingAddress } from '@/types';
 import { paypal } from '../paypal';
 import { revalidatePath } from 'next/cache';
-import { PAGE_SIZE } from '../constants';
+import { PAGE_SIZE, SERVER_URL } from '../constants';
 import { Prisma } from '@prisma/client';
 import { sendPurchaseReceipt } from '@/email';
 
@@ -250,7 +250,10 @@ export async function updateOrderToPaid({
       data: {
         isPaid: true,
         paidAt: new Date(),
-        usdTotal: Number(paymentResult?.pricePaid) || order.usdTotal,
+        usdTotal:
+          order.paymentMethod === 'PayPal'
+            ? Number(paymentResult?.pricePaid)
+            : 0,
         paymentResult,
       },
     });
@@ -551,12 +554,120 @@ export async function verifyPaystackTransaction(
       },
     });
 
-    revalidatePath(`/order/${orderId}`);
+    revalidatePath(`${SERVER_URL}/order/${orderId}`);
 
     return {
       success: true,
       message: 'Paystack payment verified successfully',
     };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+export async function createFlutterwaveTransaction(orderId: string) {
+  try {
+    const order = await prisma.order.findFirst({
+      where: { id: orderId },
+      include: { user: { select: { email: true } } },
+    });
+    if (!order) throw new Error('Order not found');
+
+    // Create a payment / transaction
+    const payload = {
+      tx_ref: `${orderId}_${Date.now()}`,
+      amount: order.totalPrice.toString(),
+      currency: 'NGN',
+      redirect_url: process.env.FLW_CALLBACK_URL,
+      customer: {
+        email: order.user?.email ?? '',
+      },
+      customizations: {
+        title: 'Your Store Name',
+        description: `Payment for order ${orderId}`,
+      },
+    };
+
+    const resp = await axios.post(
+      'https://api.flutterwave.com/v3/payments',
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.FLW_CLIENT_SECRET}`, // Use secret key directly
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const respData = resp.data;
+    if (respData.status !== 'success') {
+      throw new Error(respData.message || 'Failed to init FLW payment');
+    }
+
+    const { link, tx_ref } = respData.data;
+
+    // Save reference in order
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        paymentResult: {
+          id: tx_ref,
+          status: 'INITIATED',
+          email_address: order.user?.email ?? '',
+          pricePaid: 0,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Flutterwave transaction initialized',
+      paymentLink: link,
+      tx_ref,
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Verify Flutterwave transaction
+export async function verifyFlutterwaveTransaction(
+  orderId: string,
+  tx_ref: string
+) {
+  try {
+    const resp = await axios.get(
+      `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${tx_ref}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.FLW_CLIENT_SECRET}`, // Use secret key directly
+        },
+      }
+    );
+
+    const respData = resp.data;
+    if (
+      respData.status !== 'success' ||
+      respData.data.status !== 'successful'
+    ) {
+      throw new Error('Flutterwave payment not successful');
+    }
+
+    const flw = respData.data;
+
+    await updateOrderToPaid({
+      orderId,
+      paymentResult: {
+        id: flw.tx_ref,
+        status: flw.status,
+        email_address: flw.customer.email,
+        pricePaid: flw.amount,
+      },
+    });
+
+    revalidatePath(`/order/${orderId}`);
+
+    return { success: true, message: 'Flutterwave payment verified' };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }

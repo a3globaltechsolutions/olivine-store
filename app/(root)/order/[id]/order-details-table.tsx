@@ -1,4 +1,6 @@
 'use client';
+
+import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -15,7 +17,7 @@ import { Order } from '@/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import {
   PayPalButtons,
   PayPalScriptProvider,
@@ -58,6 +60,8 @@ const OrderDetailsTable = ({
   } = order;
 
   const { toast } = useToast();
+  const [loadingPaystack, setLoadingPaystack] = useState(false);
+  const [loadingFlutterwave, setLoadingFlutterwave] = useState(false);
 
   const PrintLoadingState = () => {
     const [{ isPending, isRejected }] = usePayPalScriptReducer();
@@ -274,22 +278,62 @@ const OrderDetailsTable = ({
               {/* Paystack Payment */}
               {!isPaid && paymentMethod === 'Paystack' && (
                 <Button
+                  disabled={loadingPaystack}
                   onClick={async () => {
-                    const res = await fetch(
-                      `/api/paystack/init?orderId=${order.id}`
-                    );
-                    const data = await res.json();
-                    if (data.success) {
-                      window.location.href = data.authorizationUrl;
-                    } else {
-                      toast({
-                        variant: 'destructive',
-                        description: data.message,
-                      });
+                    try {
+                      setLoadingPaystack(true);
+                      const res = await fetch(
+                        `/api/paystack/init?orderId=${order.id}`
+                      );
+                      const data = await res.json();
+                      if (data.success) {
+                        window.location.href = data.authorizationUrl;
+                      } else {
+                        toast({
+                          variant: 'destructive',
+                          description: data.message,
+                        });
+                      }
+                    } finally {
+                      setLoadingPaystack(false);
                     }
                   }}
                 >
+                  {loadingPaystack && (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  )}
                   Pay with Paystack
+                </Button>
+              )}
+
+              {/* Flutterwave Payment */}
+              {!isPaid && paymentMethod === 'Flutterwave' && (
+                <Button
+                  disabled={loadingFlutterwave}
+                  onClick={async () => {
+                    try {
+                      setLoadingFlutterwave(true);
+                      const res = await fetch(
+                        `/api/flutterwave/init?orderId=${order.id}`
+                      );
+                      const data = await res.json();
+                      if (data.success) {
+                        window.location.href = data.paymentLink;
+                      } else {
+                        toast({
+                          variant: 'destructive',
+                          description: data.message,
+                        });
+                      }
+                    } finally {
+                      setLoadingFlutterwave(false);
+                    }
+                  }}
+                >
+                  {loadingFlutterwave && (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  )}
+                  Pay with Flutterwave
                 </Button>
               )}
 

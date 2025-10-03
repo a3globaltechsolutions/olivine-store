@@ -68,3 +68,7 @@ export const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!;
 // backend-only (use inside /api or server-side code)
 export const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!;
 export const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL!;
+
+export const FLW_CLIENT_ID = process.env.FLW_CLIENT_ID;
+export const FLW_CLIENT_SECRET = process.env.FLW_CLIENT_SECRET!;
+export const FLW_ENCRYPTION_KEY = process.env.FLW_ENCRYPTION_KEY!;
