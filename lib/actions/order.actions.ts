@@ -452,6 +452,7 @@ export async function deliverOrder(orderId: string) {
 
 // Create Paystack transaction
 export async function createPaystackTransaction(orderId: string) {
+  console.log('🔍 createPaystackTransaction called with orderId:', orderId);
   try {
     const order = await prisma.order.findFirst({
       where: { id: orderId },
