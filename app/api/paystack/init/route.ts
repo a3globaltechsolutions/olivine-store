@@ -21,36 +21,35 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const orderId = searchParams.get('orderId');
 
-    console.log('🔍 Paystack Init Request Received');
-    console.log('➡️ OrderId:', orderId);
-    console.log(
-      '➡️ PAYSTACK_SECRET_KEY present?',
-      !!process.env.PAYSTACK_SECRET_KEY
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const debug: any = {
+      orderId,
+      hasKey: !!process.env.PAYSTACK_SECRET_KEY,
+    };
 
     if (!orderId) {
-      console.error('❌ Missing orderId in request');
       return NextResponse.json(
-        { success: false, message: 'Missing orderId' },
+        { success: false, message: 'Missing orderId', debug },
         { status: 400 }
       );
     }
 
-    // call your Paystack transaction creator
     const result = await createPaystackTransaction(orderId);
 
-    console.log('✅ Paystack Transaction Init Result:', result);
-
-    return NextResponse.json(result);
+    return NextResponse.json({ success: true, result, debug });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    console.error(
-      '❌ Paystack Init Error:',
-      err?.response?.data || err?.message || err
-    );
-
     return NextResponse.json(
-      { success: false, message: 'Payment init failed', error: err?.message },
+      {
+        success: false,
+        message: 'Payment init failed',
+        error: err?.message,
+        debug: {
+          stack: err?.stack,
+          response: err?.response?.data || null,
+          hasKey: !!process.env.PAYSTACK_SECRET_KEY,
+        },
+      },
       { status: 400 }
     );
   }
