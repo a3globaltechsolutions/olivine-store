@@ -27,9 +27,13 @@ export async function GET(req: NextRequest) {
       hasKey: !!process.env.PAYSTACK_SECRET_KEY,
     };
 
-    if (!orderId) {
+    if (!orderId || orderId === 'undefined') {
       return NextResponse.json(
-        { success: false, message: 'Missing orderId', debug },
+        {
+          success: false,
+          message: 'Invalid or missing orderId',
+          debug: { orderId },
+        },
         { status: 400 }
       );
     }
