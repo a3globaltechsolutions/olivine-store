@@ -28,7 +28,7 @@ export const shippingAddressDefaultValues = {
 export const PAYMENT_METHODS = process.env.PAYMENT_METHODS
   ? process.env.PAYMENT_METHODS.split(', ')
   : [
-      'PayStack',
+      'Paystack',
       'Flutterwave',
       'PayPal',
       'CashOnDelivery',
@@ -36,7 +36,7 @@ export const PAYMENT_METHODS = process.env.PAYMENT_METHODS
     ];
 
 export const DEFAULT_PAYMENT_METHOD =
-  process.env.DEFAULT_PAYMENT_METHOD || 'PayStack';
+  process.env.DEFAULT_PAYMENT_METHOD || 'Paystack';
 
 export const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 12;
 
@@ -67,3 +67,10 @@ export const reviewFormDefaultValues = {
 
 export const SENDER_EMAIL = process.env.SENDER_EMAIL!;
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
+
+// frontend-safe (public)
+export const PAYSTACK_PUBLIC_KEY = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!;
+
+// backend-only (use inside /api or server-side code)
+export const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!;
+export const PAYSTACK_CALLBACK_URL = process.env.PAYSTACK_CALLBACK_URL!;

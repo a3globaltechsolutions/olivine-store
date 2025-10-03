@@ -449,3 +449,114 @@ export async function deliverOrder(orderId: string) {
     return { success: false, message: formatError(error) };
   }
 }
+
+// Create Paystack transaction
+export async function createPaystackTransaction(orderId: string) {
+  try {
+    const order = await prisma.order.findFirst({
+      where: { id: orderId },
+      include: {
+        user: true, // fetch the related user
+      },
+    });
+
+    if (!order) throw new Error('Order not found');
+    if (!order.user?.email) throw new Error('Order has no user email');
+
+    // Init transaction
+    const response = await axios.post(
+      'https://api.paystack.co/transaction/initialize',
+      {
+        amount: Number(order.totalPrice) * 100, // amount in kobo
+        email: order.user.email, // ✅ use user's email
+        reference: `${orderId}_${Date.now()}`,
+        callback_url: process.env.PAYSTACK_CALLBACK_URL,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const data = response.data;
+    if (!data.status)
+      throw new Error(data.message || 'Failed to init Paystack');
+
+    // Save reference temporarily
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        paymentResult: {
+          id: data.data.reference,
+          status: 'INITIATED',
+          email_address: order.user.email,
+          pricePaid: 0,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Paystack transaction initialized',
+      authorizationUrl: data.data.authorization_url,
+      reference: data.data.reference,
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Verify Paystack transaction after redirect/webhook
+export async function verifyPaystackTransaction(
+  orderId: string,
+  reference: string
+) {
+  try {
+    const response = await axios.get(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        },
+      }
+    );
+
+    const data = response.data;
+    if (!data.status || data.data.status !== 'success') {
+      throw new Error('Payment not successful');
+    }
+
+    // Fetch order with user
+    const order = await prisma.order.findFirst({
+      where: { id: orderId },
+      include: { user: true },
+    });
+
+    if (!order) throw new Error('Order not found');
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        isPaid: true,
+        paidAt: new Date(),
+        paymentResult: {
+          id: data.data.reference,
+          status: data.data.status,
+          email_address: data.data.customer?.email || order.user.email,
+          pricePaid: data.data.amount / 100, // stored inside JSON field
+        },
+      },
+    });
+
+    revalidatePath(`/order/${orderId}`);
+
+    return {
+      success: true,
+      message: 'Paystack payment verified successfully',
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}

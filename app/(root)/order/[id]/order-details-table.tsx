@@ -236,10 +236,12 @@ const OrderDetailsTable = ({
                 <div>Total</div>
                 <div>{formatCurrency(totalPrice)}</div>
               </div>
-              <div className='flex justify-between text-sm text-gray-500'>
-                <div>Total (USD)</div>
-                <div>${totalUSD.toFixed(2)}</div>
-              </div>
+              {paymentMethod === 'PayPal' && (
+                <div className='flex justify-between text-sm text-gray-500'>
+                  <div>Total (USD)</div>
+                  <div>${totalUSD.toFixed(2)}</div>
+                </div>
+              )}
 
               {/* PayPal Payment */}
               {!isPaid && paymentMethod === 'PayPal' && (
@@ -261,6 +263,28 @@ const OrderDetailsTable = ({
                   orderId={order.id}
                   clientSecret={stripeClientSecret}
                 />
+              )}
+
+              {/* Paystack Payment */}
+              {!isPaid && paymentMethod === 'Paystack' && (
+                <Button
+                  onClick={async () => {
+                    const res = await fetch(
+                      `/api/paystack/init?orderId=${order.id}`
+                    );
+                    const data = await res.json();
+                    if (data.success) {
+                      window.location.href = data.authorizationUrl; // redirect to Paystack hosted checkout
+                    } else {
+                      toast({
+                        variant: 'destructive',
+                        description: data.message,
+                      });
+                    }
+                  }}
+                >
+                  Pay with Paystack
+                </Button>
               )}
 
               {/* Cash On Delivery */}

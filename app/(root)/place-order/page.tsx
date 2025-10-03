@@ -84,41 +84,43 @@ const PlaceOrderPage = async () => {
           <Card>
             <CardContent className='p-4 gap-4'>
               <h2 className='text-xl pb-4'>Order Items</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Price</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {cart.items.map((item) => (
-                    <TableRow key={item.slug}>
-                      <TableCell>
-                        <Link
-                          href={`/product/{item.slug}`}
-                          className='flex items-center'
-                        >
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            width={50}
-                            height={50}
-                          />
-                          <span className='px-2'>{item.name}</span>
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <span className='px-2'>{item.qty}</span>
-                      </TableCell>
-                      <TableCell className='text-right'>
-                        ₦{Number(item.price).toLocaleString('en-NG')}
-                      </TableCell>
+              <div className='overflow-x-auto'>
+                <Table className='min-w-full'>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Item</TableHead>
+                      <TableHead>Quantity</TableHead>
+                      <TableHead>Price</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {cart.items.map((item) => (
+                      <TableRow key={item.slug}>
+                        <TableCell>
+                          <Link
+                            href={`/product/${item.slug}`}
+                            className='flex items-center'
+                          >
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              width={50}
+                              height={50}
+                            />
+                            <span className='px-2'>{item.name}</span>
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <span className='px-2'>{item.qty}</span>
+                        </TableCell>
+                        <TableCell className='text-right'>
+                          ₦{Number(item.price).toLocaleString('en-NG')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -142,11 +144,13 @@ const PlaceOrderPage = async () => {
                 <div>{formatCurrency(cart.totalPrice)}</div>
               </div>
 
-              {/* ✅ Show USD equivalent */}
-              <div className='flex justify-between text-sm text-gray-500'>
-                <div>Total (USD)</div>
-                <div>${totalUSD.toFixed(2)}</div>
-              </div>
+              {/* ✅ Show USD equivalent only if PayPal */}
+              {user.paymentMethod === 'PayPal' && (
+                <div className='flex justify-between text-sm text-gray-500'>
+                  <div>Total (USD)</div>
+                  <div>${totalUSD.toFixed(2)}</div>
+                </div>
+              )}
 
               <PlaceOrderForm usdTotal={totalUSD.toFixed(2)} />
             </CardContent>
