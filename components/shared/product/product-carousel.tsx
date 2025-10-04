@@ -63,9 +63,12 @@ const ProductCarousel = ({ data }: { data: Product[] }) => {
               <Link href={`/product/${product.slug}`}>
                 <div
                   className='
-                    relative w-full 
-                    h-[450px] 
-                    mx-auto
+                    relative 
+                    w-full 
+                    aspect-[16/9]   /* ✅ makes it responsive */
+                    sm:aspect-[21/9] 
+                    overflow-hidden 
+                    rounded-lg
                   '
                 >
                   {product.banner ? (
@@ -73,18 +76,19 @@ const ProductCarousel = ({ data }: { data: Product[] }) => {
                       src={product.banner}
                       alt={product.name}
                       fill
-                      className='object-cover rounded-lg'
+                      className='object-cover w-full h-full'
                       sizes='100vw'
                       priority
                     />
                   ) : (
-                    <div className='w-full h-full bg-gray-200 flex items-center justify-center rounded-lg'>
+                    <div className='w-full h-full bg-gray-200 flex items-center justify-center'>
                       <span className='text-gray-500 text-sm sm:text-base'>
                         No Image
                       </span>
                     </div>
                   )}
 
+                  {/* product name overlay */}
                   <div className='absolute inset-0 flex items-end justify-center'>
                     <h2
                       className='
