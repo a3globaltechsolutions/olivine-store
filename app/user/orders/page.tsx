@@ -20,7 +20,6 @@ const OrdersPage = async (props: {
   searchParams: Promise<{ page: string }>;
 }) => {
   const { page } = await props.searchParams;
-
   const orders = await getMyOrders({
     page: Number(page) || 1,
   });
@@ -28,55 +27,56 @@ const OrdersPage = async (props: {
   return (
     <div className='space-y-4'>
       <h2 className='h2-bold'>Orders</h2>
-
-      {/* ✅ Fix: Always allow smooth horizontal scroll on mobile */}
-      <div className='w-full overflow-x-auto'>
-        <div className='min-w-[700px] inline-block align-middle'>
-          <Table className='w-full border border-border rounded-md'>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>DATE</TableHead>
-                <TableHead>TOTAL</TableHead>
-                <TableHead>PAID</TableHead>
-                <TableHead>DELIVERED</TableHead>
-                <TableHead>ACTIONS</TableHead>
+      {/* ✅ Fixed: Added touch-action and -webkit-overflow-scrolling for mobile */}
+      <div
+        className='w-full overflow-x-auto -webkit-overflow-scrolling-touch'
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-x pan-y',
+        }}
+      >
+        <Table className='min-w-[700px] border border-border rounded-md'>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>DATE</TableHead>
+              <TableHead>TOTAL</TableHead>
+              <TableHead>PAID</TableHead>
+              <TableHead>DELIVERED</TableHead>
+              <TableHead>ACTIONS</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.data.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell>{formatId(order.id)}</TableCell>
+                <TableCell>
+                  {formatDateTime(order.createdAt).dateTime}
+                </TableCell>
+                <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
+                <TableCell>
+                  {order.isPaid && order.paidAt
+                    ? formatDateTime(order.paidAt).dateTime
+                    : 'Not Paid'}
+                </TableCell>
+                <TableCell>
+                  {order.isDelivered && order.deliveredAt
+                    ? formatDateTime(order.deliveredAt).dateTime
+                    : 'Not Delivered'}
+                </TableCell>
+                <TableCell>
+                  <Link
+                    href={`/order/${order.id}`}
+                    className='text-primary hover:underline'
+                  >
+                    Details
+                  </Link>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {orders.data.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>{formatId(order.id)}</TableCell>
-                  <TableCell>
-                    {formatDateTime(order.createdAt).dateTime}
-                  </TableCell>
-                  <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
-                  <TableCell>
-                    {order.isPaid && order.paidAt
-                      ? formatDateTime(order.paidAt).dateTime
-                      : 'Not Paid'}
-                  </TableCell>
-                  <TableCell>
-                    {order.isDelivered && order.deliveredAt
-                      ? formatDateTime(order.deliveredAt).dateTime
-                      : 'Not Delivered'}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/order/${order.id}`}
-                      className='text-primary hover:underline'
-                    >
-                      Details
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+            ))}
+          </TableBody>
+        </Table>
       </div>
-
       {orders.totalPages > 1 && (
         <Pagination page={Number(page) || 1} totalPages={orders?.totalPages} />
       )}
