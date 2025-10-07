@@ -29,13 +29,14 @@ const OrdersPage = async (props: {
       <h2 className='h2-bold'>Orders</h2>
       {/* ✅ Fixed: Added touch-action and -webkit-overflow-scrolling for mobile */}
       <div
-        className='w-full overflow-x-auto -webkit-overflow-scrolling-touch'
+        className='block w-full overflow-x-auto rounded-md border border-border bg-background'
         style={{
           WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-x pan-y',
+          overscrollBehaviorX: 'contain',
         }}
       >
-        <Table className='min-w-[700px] border border-border rounded-md'>
+        <Table className='min-w-[700px] table-auto'>
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>

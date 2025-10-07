@@ -12,7 +12,11 @@ import { prisma } from '@/db/prisma';
 import { CartItem, PaymentResult, ShippingAddress } from '@/types';
 import { paypal } from '../paypal';
 import { revalidatePath } from 'next/cache';
-import { PAGE_SIZE, SERVER_URL } from '../constants';
+import {
+  FLW_CLIENT_SECRET,
+  PAGE_SIZE,
+  PAYSTACK_SECRET_KEY,
+} from '../constants';
 import { Prisma } from '@prisma/client';
 import { sendPurchaseReceipt } from '@/email';
 
@@ -455,26 +459,31 @@ export async function deliverOrder(orderId: string) {
 
 // Create Paystack transaction
 export async function createPaystackTransaction(orderId: string) {
-  console.log('🔍 createPaystackTransaction called with orderId:', orderId);
   try {
     const order = await prisma.order.findFirst({
       where: { id: orderId },
-      include: {
-        user: true, // fetch the related user
-      },
+      include: { user: true },
     });
 
     if (!order) throw new Error('Order not found');
     if (!order.user?.email) throw new Error('Order has no user email');
 
-    // Init transaction
+    // Safely parse totalPrice
+    const totalPrice = Number(order.totalPrice);
+    if (isNaN(totalPrice) || totalPrice <= 0) {
+      throw new Error(`Invalid total price: ${order.totalPrice}`);
+    }
+
+    // Init Paystack transaction
     const response = await axios.post(
       'https://api.paystack.co/transaction/initialize',
       {
-        amount: Number(order.totalPrice) * 100, // amount in kobo
-        email: order.user.email, // ✅ use user's email
-        reference: `${orderId}_${Date.now()}`,
-        callback_url: process.env.PAYSTACK_CALLBACK_URL,
+        amount: Math.round(totalPrice * 100), // ensure integer
+        email: order.user.email,
+        reference: `${orderId}_${Date.now()}`, // fix template literal
+        callback_url:
+          process.env.PAYSTACK_CALLBACK_URL ||
+          'http://localhost:3000/api/paystack/callback',
       },
       {
         headers: {
@@ -486,7 +495,7 @@ export async function createPaystackTransaction(orderId: string) {
 
     const data = response.data;
     if (!data.status)
-      throw new Error(data.message || 'Failed to init Paystack');
+      throw new Error(data.message || 'Failed to initialize Paystack');
 
     // Save reference temporarily
     await prisma.order.update({
@@ -508,7 +517,10 @@ export async function createPaystackTransaction(orderId: string) {
       reference: data.data.reference,
     };
   } catch (error) {
-    return { success: false, message: formatError(error) };
+    return {
+      success: false,
+      message: formatError(error),
+    };
   }
 }
 
@@ -522,7 +534,7 @@ export async function verifyPaystackTransaction(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
         },
       }
     );
@@ -540,21 +552,22 @@ export async function verifyPaystackTransaction(
 
     if (!order) throw new Error('Order not found');
 
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        isPaid: true,
-        paidAt: new Date(),
-        paymentResult: {
-          id: data.data.reference,
-          status: data.data.status,
-          email_address: data.data.customer?.email || order.user.email,
-          pricePaid: data.data.amount / 100, // stored inside JSON field
-        },
+    // ✅ Extract and validate amount
+    const amountInKobo = data.data.amount || 0;
+    const amountInNaira = Number(amountInKobo) / 100;
+
+    // ✅ Use updateOrderToPaid to handle stock reduction
+    await updateOrderToPaid({
+      orderId,
+      paymentResult: {
+        id: data.data.reference || reference,
+        status: data.data.status || 'success',
+        email_address: data.data.customer?.email || order.user?.email || '',
+        pricePaid: amountInNaira.toString(),
       },
     });
 
-    revalidatePath(`${SERVER_URL}/order/${orderId}`);
+    revalidatePath(`/order/${orderId}`);
 
     return {
       success: true,
@@ -593,7 +606,7 @@ export async function createFlutterwaveTransaction(orderId: string) {
       payload,
       {
         headers: {
-          Authorization: `Bearer ${process.env.FLW_CLIENT_SECRET}`, // Use secret key directly
+          Authorization: `Bearer ${FLW_CLIENT_SECRET}`, // Use secret key directly
           'Content-Type': 'application/json',
         },
       }
@@ -640,7 +653,7 @@ export async function verifyFlutterwaveTransaction(
       `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${tx_ref}`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.FLW_CLIENT_SECRET}`, // Use secret key directly
+          Authorization: `Bearer ${FLW_CLIENT_SECRET}`,
         },
       }
     );

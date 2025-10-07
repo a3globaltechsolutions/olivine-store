@@ -1,5 +1,4 @@
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -47,53 +46,51 @@ const AdminOrdersPage = async (props: {
         )}
       </div>
 
-      {/* ✅ WRAP THE TABLE IN A DEDICATED SCROLL CONTAINER */}
-      <div className='relative w-full overflow-x-auto overflow-y-hidden rounded-md border bg-background'>
-        <div className='min-w-[800px]'>
-          {' '}
-          {/* Prevent table from collapsing */}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>DATE</TableHead>
-                <TableHead>BUYER</TableHead>
-                <TableHead>TOTAL</TableHead>
-                <TableHead>PAID</TableHead>
-                <TableHead>DELIVERED</TableHead>
-                <TableHead>ACTIONS</TableHead>
+      <div
+        className='relative w-full overflow-x-auto rounded-md border bg-background'
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        <table className='min-w-[800px] w-full text-sm'>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>DATE</TableHead>
+              <TableHead>BUYER</TableHead>
+              <TableHead>TOTAL</TableHead>
+              <TableHead>PAID</TableHead>
+              <TableHead>DELIVERED</TableHead>
+              <TableHead>ACTIONS</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.data.map((order) => (
+              <TableRow key={order.id}>
+                <TableCell>{formatId(order.id)}</TableCell>
+                <TableCell>
+                  {formatDateTime(order.createdAt).dateTime}
+                </TableCell>
+                <TableCell>{order.user.name}</TableCell>
+                <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
+                <TableCell>
+                  {order.isPaid && order.paidAt
+                    ? formatDateTime(order.paidAt).dateTime
+                    : 'Not Paid'}
+                </TableCell>
+                <TableCell>
+                  {order.isDelivered && order.deliveredAt
+                    ? formatDateTime(order.deliveredAt).dateTime
+                    : 'Not Delivered'}
+                </TableCell>
+                <TableCell className='whitespace-nowrap space-x-2'>
+                  <Button asChild variant='outline' size='sm'>
+                    <Link href={`/order/${order.id}`}>Details</Link>
+                  </Button>
+                  <DeleteDialog id={order.id} action={deleteOrder} />
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.data.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>{formatId(order.id)}</TableCell>
-                  <TableCell>
-                    {formatDateTime(order.createdAt).dateTime}
-                  </TableCell>
-                  <TableCell>{order.user.name}</TableCell>
-                  <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
-                  <TableCell>
-                    {order.isPaid && order.paidAt
-                      ? formatDateTime(order.paidAt).dateTime
-                      : 'Not Paid'}
-                  </TableCell>
-                  <TableCell>
-                    {order.isDelivered && order.deliveredAt
-                      ? formatDateTime(order.deliveredAt).dateTime
-                      : 'Not Delivered'}
-                  </TableCell>
-                  <TableCell className='whitespace-nowrap space-x-2'>
-                    <Button asChild variant='outline' size='sm'>
-                      <Link href={`/order/${order.id}`}>Details</Link>
-                    </Button>
-                    <DeleteDialog id={order.id} action={deleteOrder} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+            ))}
+          </TableBody>
+        </table>
       </div>
 
       {orders.totalPages > 1 && (

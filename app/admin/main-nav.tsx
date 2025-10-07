@@ -56,6 +56,11 @@ const MainNav = ({
           <SheetContent
             side='left'
             className='flex flex-col gap-6 p-6 bg-background'
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehaviorY: 'contain',
+              touchAction: 'pan-y',
+            }}
           >
             <nav className='flex flex-col space-y-3'>
               {links.map((link) => (
