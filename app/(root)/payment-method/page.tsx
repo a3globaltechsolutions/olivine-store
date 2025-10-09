@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { Metadata } from 'next';
 import { auth } from '@/auth';
 import { getUserById } from '@/lib/actions/user.actions';

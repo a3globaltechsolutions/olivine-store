@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import ProductCard from '@/components/shared/product/product-card';
 import { Button } from '@/components/ui/button';
 import {

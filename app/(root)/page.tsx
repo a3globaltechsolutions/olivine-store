@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import ProductList from '@/components/shared/product/product-list';
 import {
   getLatestProducts,
