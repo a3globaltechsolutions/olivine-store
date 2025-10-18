@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+// import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -17,7 +17,7 @@ import { Order } from '@/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import {
   PayPalButtons,
   PayPalScriptProvider,
@@ -29,13 +29,13 @@ import {
   updateOrderToPaidCOD,
   deliverOrder,
 } from '@/lib/actions/order.actions';
-import StripePayment from './stripe-payment';
+// import StripePayment from './stripe-payment';
 
 const OrderDetailsTable = ({
   order,
   paypalClientId,
   isAdmin,
-  stripeClientSecret,
+  // stripeClientSecret,
   totalUSD,
 }: {
   order: Omit<Order, 'paymentResult'>;
@@ -60,8 +60,8 @@ const OrderDetailsTable = ({
   } = order;
 
   const { toast } = useToast();
-  const [loadingPaystack, setLoadingPaystack] = useState(false);
-  const [loadingFlutterwave, setLoadingFlutterwave] = useState(false);
+  // const [loadingPaystack, setLoadingPaystack] = useState(false);
+  // const [loadingFlutterwave, setLoadingFlutterwave] = useState(false);
 
   const PrintLoadingState = () => {
     const [{ isPending, isRejected }] = usePayPalScriptReducer();
@@ -256,7 +256,12 @@ const OrderDetailsTable = ({
               {/* PayPal Payment */}
               {!isPaid && paymentMethod === 'PayPal' && (
                 <div>
-                  <PayPalScriptProvider options={{ clientId: paypalClientId }}>
+                  <PayPalScriptProvider
+                    options={{
+                      clientId: paypalClientId,
+                      disableFunding: 'card',
+                    }}
+                  >
                     <PrintLoadingState />
                     <PayPalButtons
                       createOrder={handleCreatePayPalOrder}
@@ -267,16 +272,16 @@ const OrderDetailsTable = ({
               )}
 
               {/* Stripe Payment */}
-              {!isPaid && paymentMethod === 'Stripe' && stripeClientSecret && (
+              {/* {!isPaid && paymentMethod === 'Stripe' && stripeClientSecret && (
                 <StripePayment
                   priceInCents={Number(order.totalPrice) * 100}
                   orderId={order.id}
                   clientSecret={stripeClientSecret}
                 />
-              )}
+              )} */}
 
               {/* Paystack Payment */}
-              {!isPaid && paymentMethod === 'Paystack' && (
+              {/* {!isPaid && paymentMethod === 'Paystack' && (
                 <Button
                   disabled={loadingPaystack}
                   onClick={async () => {
@@ -304,10 +309,10 @@ const OrderDetailsTable = ({
                   )}
                   Pay with Paystack
                 </Button>
-              )}
+              )} */}
 
               {/* Flutterwave Payment */}
-              {!isPaid && paymentMethod === 'Flutterwave' && (
+              {/* {!isPaid && paymentMethod === 'Flutterwave' && (
                 <Button
                   disabled={loadingFlutterwave}
                   onClick={async () => {
@@ -335,7 +340,7 @@ const OrderDetailsTable = ({
                   )}
                   Pay with Flutterwave
                 </Button>
-              )}
+              )} */}
 
               {/* Cash On Delivery */}
               {isAdmin && !isPaid && paymentMethod === 'CashOnDelivery' && (
