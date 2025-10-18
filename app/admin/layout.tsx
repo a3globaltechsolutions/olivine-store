@@ -46,7 +46,6 @@ export default function AdminLayout({
         </div>
       </header>
 
-      {/* ✅ Main content area */}
       <main className='flex-1 container mx-auto w-full px-4 py-8 sm:px-6 lg:px-8'>
         {children}
       </main>
