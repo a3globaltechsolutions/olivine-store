@@ -18,8 +18,8 @@ export default function AdminLayout({
             <Link href='/' className='flex items-center md:hidden'>
               <Image
                 src='/images/logo.svg'
-                height={35}
-                width={35}
+                height={40}
+                width={40}
                 alt={APP_NAME}
                 priority
               />
